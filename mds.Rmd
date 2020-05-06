@@ -17,7 +17,7 @@ library(ggpubr)
 library(dplyr)
 library(tidyverse)
 library(tidyr)
-
+library(gplots)
 ```
 ```{r}
 # read in files
@@ -110,6 +110,48 @@ summary(aov_wls)
 ```
 Mature group's effect was not significant in this case as well, meaning there is no significant differences
 in yield loss between different mature group.
+
+
+```{r}
+ggplot(data = mds_gather, aes(x=days, y=yield, color = rm))+
+  geom_smooth(method='lm')+
+  geom_line()+
+  labs(title='Yield through planting date')
+```
+The straight lines are the regression line for each mature group. According to this dataset, the loss of yield
+would increase through time.
+
+
+```{r}
+hm <- as.matrix(mds[,c(3:6)])
+rownames(hm) <- mds$days
+hm_dev <- hm - colMeans(hm)
+heatmap.2(hm_dev, scale = 'none', col = bluered(100), trace = 'none',
+          cexRow = 0.7, cexCol = 1, lhei = c(0.5,1.5), lwid = c(0.5,1.5), 
+          margins = c(6,5), keysize = 2, xlab = 'Maturity Group',
+          ylab = 'Days after 5/1', main = 'Yield deviation according to plating date')
+
+```
+Each column represents the yield for each plating date for each maturity group.
+Increase in red means the yield are higher than the average. Increase in blue means
+the yield is lower than average.
+This graph tells us what dates to plant would have higher yield and what dates to plant
+would have lower yield.
+
+
+# best day_range to plant
+Since we know day_range is sigificant we should find out which day_range would be the best
+and worst in yield.
+```{r}
+aov_dr <- aov(yield ~ day_range, data = mds_gather)
+tk_dr <- TukeyHSD(aov_dr)
+tk_dr
+```
+According to Tukey's post-test:
+peak_week is significantly higher than 2_weeks_late and weeks_late in yield. (with a average yield difference of 15.28 B/A)
+1_week_late is significantly higher than 2_weeks_late and weeks_late in yield.  (with a average yield difference of 15.85 B/A)
+weeks_prior, peak_week, and 1_week_late does not have difference in yield.
+weeks_prior, 2_week_late, and weeks_late does not have differnce in yield.
 
 # boxplot
 ```{r}
