@@ -1,0 +1,120 @@
+---
+title: "mds_assessment"
+author: "AllenY"
+date: "5/5/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, results='hide'}
+library(ggplot2)
+library(tidyr)
+library(reshape2)
+library(ggpubr)
+library(dplyr)
+library(tidyverse)
+library(tidyr)
+
+```
+```{r}
+# read in files
+mds <- read.csv('MDS.csv', header = T)
+mds_full <- mds
+colnames(mds)[2] <- c('days')
+head(mds)
+```
+
+# long format
+```{r}
+mds_gather <- gather(mds, key = 'rm', value = 'yield', 3:6, factor_key = T)
+mds_gather$date <- as.Date(mds_gather$date)
+head(mds_gather)
+```
+
+# create bins for plating date
+weeks_prior: planting date was at least 7 days earlier than 5/1
+peak_week: planting date was between 7 days prior than 5/1 or 7 days after 5/1
+1_week_late: planting date was between 7 days and 15 days after 5/1
+2_week_late: planting date was between 15 days and 22 days after 5/1
+weeks_late: planting date was at least 7 days later than 5/1
+
+```{r}
+mds_gather <- mds_gather%>%
+  mutate(day_range = case_when(days < -7 ~ 'weeks_prior',
+                               days >= -7 & days < 7 ~ 'peak_week',
+                               days >= 7 & days < 15 ~'1_week_late',
+                               days >=15 & days < 22 ~ '2_weeks_late',
+                               days >=22 ~ 'weeks_late'))
+mds_gather$day_range <- as.factor(mds_gather$day_range)
+mds_gather$day_range <- factor(mds_gather$day_range, 
+                               levels = c('weeks_prior','peak_week','1_week_late','2_weeks_late', 'weeks_late'))
+head(mds_gather)
+```
+
+# anova for the rm and day_range
+```{r}
+aov.rm_dr <- aov(yield ~ rm*day_range, data = mds_gather)
+summary(aov.rm_dr)
+```
+Since day_range is significant, we can single out each day_range and find the best rm within.
+
+# weeks_prior
+```{r}
+wp <- mds_gather[mds_gather[,'day_range']=='weeks_prior', ]
+
+aov_wp <- aov(yield ~ rm, data = wp)
+summary(aov_wp)
+```
+Mature group's effect was not significant in this case, meaning there is no significant differences
+in yield loss between different mature group.
+
+# peak_week
+```{r}
+pw <- mds_gather[mds_gather[,'day_range']=='peak_week', ]
+
+aov_pw <- aov(yield ~ rm, data = pw)
+summary(aov_pw)
+```
+Mature group's effect was not significant in this case as well, meaning there is no significant differences
+in yield loss between different mature group.
+
+# 1_week_late
+```{r}
+wl1 <- mds_gather[mds_gather[,'day_range']=='1_week_late', ]
+
+aov_wl1 <- aov(yield ~ rm, data = wl1)
+summary(aov_wl1)
+```
+Mature group's effect was not significant in this case as well, meaning there is no significant differences
+in yield loss between different mature group.
+
+# weeks_late
+```{r}
+wl2 <- mds_gather[mds_gather[,'day_range']=='2_weeks_late', ]
+
+aov_wl2 <- aov(yield ~ rm, data = wl2)
+summary(aov_wl2)
+```
+Mature group's effect was not significant in this case as well, meaning there is no significant differences
+in yield loss between different mature group.
+
+# weeks_late
+```{r}
+wls <- mds_gather[mds_gather[,'day_range']=='weeks_late', ]
+
+aov_wls <- aov(yield ~ rm, data = wls)
+summary(aov_wls)
+```
+Mature group's effect was not significant in this case as well, meaning there is no significant differences
+in yield loss between different mature group.
+
+# boxplot
+```{r}
+ggplot(data = mds_gather, aes(x=day_range, y=yield, color=rm))+
+  geom_boxplot()
+```
+
+
