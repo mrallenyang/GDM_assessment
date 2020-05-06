@@ -34,7 +34,7 @@ pop$Population <- as.factor(pop$Population)
 
 
 #1 best population per variety
-var <- lm(Yield ~ Population*Variety, data = pop)
+var <- lm(Yield ~ Population+Variety, data = pop)
 summary(var) 
 ## DM 3810: Population 45
 ## DM 4210: Population 25

@@ -1,0 +1,36 @@
+---
+title: "population"
+author: "AllenY"
+date: "5/6/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, results='hide'}
+library(ggplot2)
+library(tidyr)
+library(reshape2)
+library(ggpubr)
+library(dplyr)
+library(tidyverse)
+library(tidyr)
+```
+
+# read in files
+```{r}
+pop <- read.csv('Population.csv')
+pop <- pop[1:9]
+pop$Population <- as.factor(pop$Population)
+head(pop)
+```
+
+```{r}
+var_pop <- aov(Yield ~ Population*Variety, data = pop)
+summary(var_pop)
+
+
+```
+

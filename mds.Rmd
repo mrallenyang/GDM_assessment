@@ -1,15 +1,20 @@
 ---
-title: "mds_assessment"
+title: "MDS_dataset"
 author: "AllenY"
 date: "5/5/2020"
-output: html_document
+output:
+  html_document: default
+  pdf_document: default
 ---
+## Question to answer:
+Please show the loss of the yields depending on the planting date in the 4 maturity groups (Early4, Medium 4, Late 4, and Early 5).  
+Also if you notice anything else about the data that you feel should be analyzed and reported, please do so.
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r, results='hide'}
+```{r, message=FALSE, warning=FALSE}
 library(ggplot2)
 library(tidyr)
 library(reshape2)
@@ -27,22 +32,46 @@ colnames(mds)[2] <- c('days')
 head(mds)
 ```
 
-# long format
+### Create heatmap in R (Same as the graph in excel)
 ```{r}
+hm <- as.matrix(mds[,c(3:6)])
+rownames(hm) <- mds$days
+hm_dev <- hm - colMeans(hm)
+heatmap.2(hm_dev, scale = 'none', col = bluered(100), trace = 'none',
+          cexRow = 0.7, cexCol = 1, lhei = c(0.5,1.5), lwid = c(0.5,1.5), 
+          margins = c(6,5), keysize = 2, xlab = 'Maturity Group',
+          ylab = 'Days after 5/1')
+
+```
+
+Each column represents the yield for each plating date for each maturity group.  
+Increase in red means the yield is higher than the Maturity Group's average. Increase in blue means
+the yield is lower than the Maturity Group's average.  
+This graph tells us what dates to plant would have higher yield and what dates to plant
+would have lower yield.  
+
+
+```{r}
+# long format
 mds_gather <- gather(mds, key = 'rm', value = 'yield', 3:6, factor_key = T)
 mds_gather$date <- as.Date(mds_gather$date)
 head(mds_gather)
 ```
 
-# create bins for plating date
-weeks_prior: planting date was at least 7 days earlier than 5/1
-peak_week: planting date was between 7 days prior than 5/1 or 7 days after 5/1
-1_week_late: planting date was between 7 days and 15 days after 5/1
-2_week_late: planting date was between 15 days and 22 days after 5/1
-weeks_late: planting date was at least 7 days later than 5/1
+### Create new variable: day_range
+Since the information I have on the time variable wasn't sufficient enough to 
+perform proper statistical analysis, I created a new time variable "day_range"- bins
+to group similar dates.  
+
+weeks_prior: planting date was at least 7 days earlier than 5/1  
+peak_week: planting date was between 7 days prior than 5/1 or 7 days after 5/1  
+1_week_late: planting date was between 7 days and 15 days after 5/1  
+2_week_late: planting date was between 15 days and 22 days after 5/1  
+weeks_late: planting date was at least 22 days later than 5/1  
 
 ```{r}
-mds_gather <- mds_gather%>%
+# create bins for planting date
+mds_gather <- mds_gather %>%
   mutate(day_range = case_when(days < -7 ~ 'weeks_prior',
                                days >= -7 & days < 7 ~ 'peak_week',
                                days >= 7 & days < 15 ~'1_week_late',
@@ -54,109 +83,112 @@ mds_gather$day_range <- factor(mds_gather$day_range,
 head(mds_gather)
 ```
 
-# anova for the rm and day_range
+### ANOVA for variable rm and day_range
 ```{r}
+# anova rm and day_range
 aov.rm_dr <- aov(yield ~ rm*day_range, data = mds_gather)
 summary(aov.rm_dr)
 ```
 Since day_range is significant, we can single out each day_range and find the best rm within.
 
-# weeks_prior
+### ANOVA for Maturity Group in day_range: weeks_prior
 ```{r}
+# weeks_prior
 wp <- mds_gather[mds_gather[,'day_range']=='weeks_prior', ]
 
 aov_wp <- aov(yield ~ rm, data = wp)
 summary(aov_wp)
 ```
-Mature group's effect was not significant in this case, meaning there is no significant differences
+Maturity group's effect was not significant in this case, meaning there is no significant differences
 in yield loss between different mature group.
 
-# peak_week
+### ANOVA for Maturity Group in day_range: peak_week
 ```{r}
+# peak_week
 pw <- mds_gather[mds_gather[,'day_range']=='peak_week', ]
 
 aov_pw <- aov(yield ~ rm, data = pw)
 summary(aov_pw)
 ```
-Mature group's effect was not significant in this case as well, meaning there is no significant differences
+Maturity group's effect was not significant in this case as well, meaning there is no significant differences
 in yield loss between different mature group.
 
-# 1_week_late
+### ANOVA for Maturity Group in day_range: 1_week_late
 ```{r}
 wl1 <- mds_gather[mds_gather[,'day_range']=='1_week_late', ]
 
 aov_wl1 <- aov(yield ~ rm, data = wl1)
 summary(aov_wl1)
 ```
-Mature group's effect was not significant in this case as well, meaning there is no significant differences
+Maturity group's effect was not significant in this case as well, meaning there is no significant differences
 in yield loss between different mature group.
 
-# weeks_late
+
+### ANOVA for Maturity Group in day_range: 2_weeks_late
 ```{r}
+# 2_weeks_late
 wl2 <- mds_gather[mds_gather[,'day_range']=='2_weeks_late', ]
 
 aov_wl2 <- aov(yield ~ rm, data = wl2)
 summary(aov_wl2)
 ```
-Mature group's effect was not significant in this case as well, meaning there is no significant differences
+Maturity group's effect was not significant in this case as well, meaning there is no significant differences
 in yield loss between different mature group.
 
-# weeks_late
+
+### ANOVA for Maturity Group in day_range: weeks_late
 ```{r}
+# weeks_late
 wls <- mds_gather[mds_gather[,'day_range']=='weeks_late', ]
 
 aov_wls <- aov(yield ~ rm, data = wls)
 summary(aov_wls)
 ```
-Mature group's effect was not significant in this case as well, meaning there is no significant differences
+Maturity group's effect was not significant in this case as well, meaning there is no significant differences
 in yield loss between different mature group.
 
-
-```{r}
+### Plot each Maturity group's daily yield against planting day
+```{r, warning=FALSE}
 ggplot(data = mds_gather, aes(x=days, y=yield, color = rm))+
   geom_smooth(method='lm')+
   geom_line()+
   labs(title='Yield through planting date')
 ```
-The straight lines are the regression line for each mature group. According to this dataset, the loss of yield
-would increase through time.
+  
+The straight lines are the regression lines for each mature group.  
+According to this dataset, the loss of yield would increase through time.
 
 
-```{r}
-hm <- as.matrix(mds[,c(3:6)])
-rownames(hm) <- mds$days
-hm_dev <- hm - colMeans(hm)
-heatmap.2(hm_dev, scale = 'none', col = bluered(100), trace = 'none',
-          cexRow = 0.7, cexCol = 1, lhei = c(0.5,1.5), lwid = c(0.5,1.5), 
-          margins = c(6,5), keysize = 2, xlab = 'Maturity Group',
-          ylab = 'Days after 5/1', main = 'Yield deviation according to plating date')
-
-```
-Each column represents the yield for each plating date for each maturity group.
-Increase in red means the yield are higher than the average. Increase in blue means
-the yield is lower than average.
-This graph tells us what dates to plant would have higher yield and what dates to plant
-would have lower yield.
-
-
-# best day_range to plant
-Since we know day_range is sigificant we should find out which day_range would be the best
-and worst in yield.
+### Best day_range to plant
+Since we know day_range effect is sigificant, we can find out which day_range would be the best
+and worst in yield.  
 ```{r}
 aov_dr <- aov(yield ~ day_range, data = mds_gather)
 tk_dr <- TukeyHSD(aov_dr)
 tk_dr
 ```
-According to Tukey's post-test:
-peak_week is significantly higher than 2_weeks_late and weeks_late in yield. (with a average yield difference of 15.28 B/A)
-1_week_late is significantly higher than 2_weeks_late and weeks_late in yield.  (with a average yield difference of 15.85 B/A)
-weeks_prior, peak_week, and 1_week_late does not have difference in yield.
-weeks_prior, 2_week_late, and weeks_late does not have differnce in yield.
+According to Tukey's post-hoc test:  
+peak_week is significantly higher than 2_weeks_late and weeks_late in yield. (With an average yield difference of 15.28 B/A)  
+1_week_late is significantly higher than 2_weeks_late and weeks_late in yield.  (With an average yield difference of 15.85 B/A)  
+weeks_prior, peak_week, and 1_week_late does not have difference in yield.  
+weeks_prior, 2_week_late, and weeks_late does not have differnece in yield.  
 
-# boxplot
+### Boxplot for each day_range
 ```{r}
+# boxplot
 ggplot(data = mds_gather, aes(x=day_range, y=yield, color=rm))+
   geom_boxplot()
 ```
+
+## Summary
+According to this dataset, I conclude that Maturity Group does NOT have significant effect in all cases- meaning no 
+matter what Maturity Group the plants were, yields do not have any difference.  
+However, the best planting day would be anytime prior to 15 days after 5/1- it would have sigificantly 
+higher yields overall compared to other planting day.  
+In addtion, planting anytime later than 15 days after 5/1 would have sigificantly higher yield loss.
+  
+  
+  
+
 
 
