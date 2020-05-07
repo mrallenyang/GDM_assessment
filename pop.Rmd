@@ -1,5 +1,5 @@
 ---
-title: "population"
+title: "population_dataset"
 author: "AllenY"
 date: "5/6/2020"
 output: html_document
@@ -7,9 +7,36 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+hook_output <- knit_hooks$get("output")
+knit_hooks$set(output = function(x, options) {
+  lines <- options$output.lines
+  if (is.null(lines)) {
+    return(hook_output(x, options))  # pass to default hook
+  }
+  x <- unlist(strsplit(x, "\n"))
+  more <- "..."
+  if (length(lines)==1) {        # first n lines
+    if (length(x) > lines) {
+      # truncate the output, but add ....
+      x <- c(head(x, lines), more)
+    }
+  } else {
+    x <- c(more, x[lines], more)
+  }
+  # paste these lines together
+  x <- paste(c(x, ""), collapse = "\n")
+  hook_output(x, options)
+})
 ```
 
-```{r, results='hide'}
+# Questions to answer:
+### Which is the best population per variety
+### Which is the best population per RM ( maturity group)
+### Which is the best population per RM in different environment ( High environment > 75 B/A – Medium Environment  60 – 75 B/A – low environment < 60 B/A)
+
+```{r, message=FALSE, warning=FALSE}
+# load necessary packages
 library(ggplot2)
 library(tidyr)
 library(reshape2)
@@ -19,18 +46,368 @@ library(tidyverse)
 library(tidyr)
 ```
 
-# read in files
 ```{r}
+# read in files
 pop <- read.csv('Population.csv')
 pop <- pop[1:9]
 pop$Population <- as.factor(pop$Population)
 head(pop)
 ```
+## 1. Which is the best population per variety?
+In order to answer this question, we need to confirm that there is significant differences between different population-
+to say that that particular population(s) is the best for that variety.
 
+### Check for signicant variables
 ```{r}
+# anova population*variety
 var_pop <- aov(Yield ~ Population*Variety, data = pop)
 summary(var_pop)
+```
+  
+There seems to be no significant effect on yield for population. The interaction effect was not significant as well.
+However, Variety showed significant effect on yield.  
+Therefore, I decided to find the best population within each variety.
 
+### Best population for DM 3810
+```{r}
+# ANOVA for population within DM 4210
+dm_3810 <- pop[pop[,'Variety']=='DM 3810', ]
+
+aov.pop_dm3810 <- aov(Yield ~ Population, data = dm_3810)
+summary(aov.pop_dm3810)
+TukeyHSD(aov.pop_dm3810)
+
+ggplot(data = dm_3810, aes(x=Population, y=Yield))+
+  geom_boxplot()+
+  labs(title = "Differences in DM 3810's Yield between different Population")
+```
+  
+Statiscally speaking, there is no difference between Populations within the same variety. Meaning
+no matter which Population DM 3810 were grew, there is no difference in Yield.
+
+
+### Best population within DM 4210
+```{r}
+# ANOVA for population within DM 4210
+dm_4210 <- pop[pop[,'Variety']=='DM 4210', ]
+
+aov.pop_dm4210 <- aov(Yield ~ Population, data = dm_4210)
+summary(aov.pop_dm4210)
+TukeyHSD(aov.pop_dm4210)
+
+ggplot(data = dm_4210, aes(x=Population, y=Yield))+
+  geom_boxplot()+
+  labs(title = "Differences in DM 4210's Yield between different Population")
+```
+  
+Similar result as in DM 3819, statiscally speaking, there is no difference between Populations 
+within the same variety. Meaning no matter which Population DM 4210 were grew, there is no difference in Yield.  
+However, Population 25 would potentially have higher yield than Population 35.
+
+### Best population within DM 4612
+```{r}
+# ANOVA for population within DM 4612
+dm_4612 <- pop[pop[,'Variety']=='DM 4612', ]
+
+aov.pop_dm4612 <- aov(Yield ~ Population, data = dm_4612)
+summary(aov.pop_dm4612)
+TukeyHSD(aov.pop_dm4612)
+
+ggplot(data = dm_4612, aes(x=Population, y=Yield))+
+  geom_boxplot()+
+  labs(title = "Differences in DM 4612's Yield between different Population")
+```
+  
+Similar result, statiscally speaking, there is no difference between Populations 
+within the same variety. Meaning no matter which Population DM 4612 were grew, it will have consistent yield.
+
+### Best population within DM 4670
+```{r}
+# ANOVA for population within DM 4670
+dm_4670 <- pop[pop[,'Variety']=='DM 4670', ]
+
+aov.pop_dm4670 <- aov(Yield ~ Population, data = dm_4670)
+summary(aov.pop_dm4670)
+TukeyHSD(aov.pop_dm4670)
+
+ggplot(data = dm_4670, aes(x=Population, y=Yield))+
+  geom_boxplot()+
+  labs(title = "Differences in DM 4670's Yield between different Population")
+```
+  
+Similar result, statiscally speaking, there is no difference between Populations 
+within the same variety. Meaning no matter which Population DM 4670 were grew, it will have consistent yield.
+
+### Best population within DM 4712
+```{r}
+# ANOVA for population within DM 4712
+dm_4712 <- pop[pop[,'Variety']=='DM 4712', ]
+
+aov.pop_dm4712 <- aov(Yield ~ Population, data = dm_4712)
+summary(aov.pop_dm4712)
+TukeyHSD(aov.pop_dm4712)
+
+ggplot(data = dm_4712, aes(x=Population, y=Yield))+
+  geom_boxplot()+
+  labs(title = "Differences in DM 4712's Yield between different Population")
+```
+  
+Similar result, statiscally speaking, there is no difference between Populations 
+within the same variety. Meaning no matter which Population DM 4712 were grew, it will have consistent yield.
+
+### Best population within DM 4970
+```{r}
+# ANOVA for population within DM 4970
+dm_4970 <- pop[pop[,'Variety']=='DM 4970', ]
+
+aov.pop_dm4970 <- aov(Yield ~ Population, data = dm_4970)
+summary(aov.pop_dm4970)
+TukeyHSD(aov.pop_dm4970)
+
+ggplot(data = dm_4970, aes(x=Population, y=Yield))+
+  geom_boxplot()+
+  labs(title = "Differences in DM 4970's Yield between different Population")
+```
+  
+Similar result, statiscally speaking, there is no difference between Populations 
+within the same variety. Meaning no matter which Population DM 4970 were grew, it will have consistent yield.
+
+### Best for population within DM 5.1
+```{r}
+# ANOVA for population within DM 5.1
+dm_5.1 <- pop[pop[,'Variety']=='DM 5.1', ]
+
+aov.pop_dm5.1 <- aov(Yield ~ Population, data = dm_5.1)
+summary(aov.pop_dm5.1)
+TukeyHSD(aov.pop_dm5.1)
+
+ggplot(data = dm_5.1, aes(x=Population, y=Yield))+
+  geom_boxplot()+
+  labs(title = "Differences in DM 5.1's Yield between different Population")
+```
+  
+Though the boxplot shows that there seems to be a difference in mean, the sample size
+was too small to make a statistical conclustion. Therefore, there's no statistic 
+difference in yield between Population.
+
+### Conclusion for the first question
+There's no significant difference in yield between Population for each Vareity- meaning
+all varieties have consistent yield across Population. A honorable mention would be DM 4210. It
+would potentially have higher yield in Population 25 than Population 35.
+  
+  
+
+## 2. Which is the best population per RM (maturity group)?
+Similar approach as to answer the first question. But this time, instead of 
+lookning into each variety, each maturity group will be examined.
+
+### Significant test for variables
+```{r}
+rm_pop <- aov(Yield ~ RM * Population, data = pop)
+summary(rm_pop)
+```
+  
+Maturity group have significant difference in yield, while population does not.
+
+
+### Best Population for Early 4
+```{r}
+e4 <- pop[pop[,'RM']=='Early 4', ]
+
+aov.pop_e4 <- aov(Yield ~ Population, data = e4)
+summary(aov.pop_e4)
+TukeyHSD(aov.pop_e4)
+
+ggplot(data = e4, aes(x=Population, y=Yield))+
+  geom_boxplot()+
+  labs(title = "Differences in Early 4's Yield between different Population")
+```
+  
+There is no significant difference in yield between populations when planting Early 4.
+
+### Best Population for Early 5
+```{r}
+e5 <- pop[pop[,'RM']=='Early 5', ]
+
+aov.pop_e5 <- aov(Yield ~ Population, data = e5)
+summary(aov.pop_e5)
+TukeyHSD(aov.pop_e5)
+
+ggplot(data = e5, aes(x=Population, y=Yield))+
+  geom_boxplot()+
+  labs(title = "Differences in Early 5's Yield between different Population")
+```
+  
+At glance, Population 25 seems to have higher yield than Population 15 and 35 when planting Early 5. 
+However, statistically, I am 95% confidence that Population 25 does NOT differ from Population 15 and 35.  
+Mainly because the sample size was too small to conlcude that the two population are significantly different.
+
+
+### Best Population for Late 3
+```{r}
+l3 <- pop[pop[,'RM']=='Late 3', ]
+
+aov.pop_l3 <- aov(Yield ~ Population, data = l3)
+summary(aov.pop_l3)
+TukeyHSD(aov.pop_l3)
+
+ggplot(data = l3, aes(x=Population, y=Yield))+
+  geom_boxplot()+
+  labs(title = "Differences in Late 3's Yield between different Population")
 
 ```
+  
+When planting Late 3, there is no significant difference in Yield between different Population.
+  
+### Best Population for Late 4
+```{r}
+l4 <- pop[pop[,'RM']=='Late 4', ]
+
+aov.pop_l4 <- aov(Yield ~ Population, data = l4)
+summary(aov.pop_l4)
+TukeyHSD(aov.pop_l4)
+
+ggplot(data = l4, aes(x=Population, y=Yield))+
+  geom_boxplot()+
+  labs(title = "Differences in Late 4's Yield between different Population")
+```
+  
+There is also no significant difference in Yield between different Population when plating Late 4.
+
+### Best Population for Medium 4
+```{r}
+m4 <- pop[pop[,'RM']=='Medium 4', ]
+
+aov.pop_m4 <- aov(Yield ~ Population, data = m4)
+summary(aov.pop_m4)
+TukeyHSD(aov.pop_m4)
+
+ggplot(data = m4, aes(x=Population, y=Yield))+
+  geom_boxplot()+
+  labs(title = "Differences in Medium 4's Yield between different Population")
+```
+  
+There's no significant difference in yield between population when planting Medium 4.
+
+### Conclusion for the second question
+There's no significant difference in yield between population for each maturity group- meaning
+every maturity group perform the same across all population.
+  
+  
+##3. Which is the best population per RM in different environment (High environment > 75 B/A – Medium Environment  60 – 75 B/A – low environment < 60 B/A)
+For this question, though the approach would be similar as previous, we need to create a new variable to identify
+different environment.
+```{r}
+# create environment
+pop <- pop %>%
+  mutate(environment = case_when(Yield > 75 ~ 'high',
+                                 (Yield <= 75 & Yield >= 60) ~'medium',
+                                 Yield < 60 ~ 'low'))
+```
+
+### ANOVA test for significant variable
+```{r}
+env_rm_pop <- aov(Yield ~ environment*RM*Population, data = pop)
+summary(env_rm_pop)
+```
+  
+Environment and Population now have significant effect in Yield. 
+An interesting detail is that Environment have significant interaction effect on RM and Population-
+meaning when the Environment changed, the performance of RM and Population would change
+as well.  
+We can now proceed to find the best population for each RM in different Environment.
+
+### High environment
+```{r}
+high <- pop[pop[,'environment']=='high', ]
+aov.high_pop_rm <- aov(Yield ~ Population * RM, data = high)
+summary(aov.high_pop_rm)
+```
+  
+In high environment, Maturity groups have significantly different yield. However, 
+Population does NOT seem to have significant difference in yield. Therefore, to speed up 
+the analysis process, I directly compared all means for each combination
+
+```{r, output.lines = 25}
+TukeyHSD(aov.high_pop_rm)
+```
+  
+There is no signifcant difference in yield for the populations in each maturity group in high environment.
+(See full output in rmd file)
+
+```{r}
+# Boxplot for Yields betwen Population for each RM
+ggplot(data = high, aes(x=RM, y=Yield, color=Population))+
+  geom_boxplot()+
+  labs(title = 'Yields betwen Population for each RM in High environment')
+```
+
+### Medium environment
+```{r}
+med <- pop[pop[,'environment']=='medium', ]
+aov.med_pop_rm <- aov(Yield ~ Population * RM, data = med)
+summary(aov.med_pop_rm)
+```
+  
+In medium environment, none of the variable efffects were significant- meaning no matter what 
+population the plants were planted, and no matter what maturity group were used, there is no
+significant difference in yield.
+
+### Check to see if there is significant difference within each maturity group
+```{r, output.lines = 25}
+TukeyHSD(aov.med_pop_rm)
+```
+  
+There is no signifcant difference in yield for the populations in each maturity group in medium environment.
+(See full output in rmd file)
+
+```{r}
+# Boxplot for Yields betwen Population for each RM
+ggplot(data = med, aes(x=RM, y=Yield, color=Population))+
+  geom_boxplot()+
+  labs(title = 'Yields betwen Population for each RM in Medium environment')
+```
+  
+Again, because the sample size was not sufficient enough to say the yield are different for each population.
+
+### Low environment
+```{r}
+low <- pop[pop[,'environment']=='low', ]
+aov.low_pop_rm <- aov(Yield ~ Population * RM, data = low)
+summary(aov.low_pop_rm)
+```
+  
+In low environment, there is significant difference in between populations
+
+```{r, output.lines = 25}
+TukeyHSD(aov.low_pop_rm)
+```
+  
+In low environment, when planting Medium 4, Population 45 and 35 is significantly higher than Population 15.
+
+```{r}
+# Boxplot for Yields betwen Population for each RM
+ggplot(data = low, aes(x=RM, y=Yield, color=Population))+
+  geom_boxplot()+
+  labs(title = 'Yields betwen Population for each RM in Low environment')
+```
+  
+Though the graph does not seems to have clear difference for Population 15 vs. 35 and Population 15 vs 45, 
+a good explaination would be when planting Medium 4 in low environment with Population 15, the yield would have
+drastic difference. Therefore, it would be better to select either population 25, 35, or 45 when planting
+Medium 4 in low environments.
+
+## Conclusion for question 3
+For high and medium environment, there is no population that stands out significantly within each
+maturity group- every maturity group perform stably across all population. However, for low environment 
+it would be more ideal to select population 25, 35 or 45 when planting Medium 4, since it will not perform 
+stable in population 15.
+
+
+
+
+
+
+
+
 
