@@ -294,7 +294,7 @@ There's no significant difference in yield between population for each maturity 
 every maturity group perform the same across all population.
   
   
-##3. Which is the best population per RM in different environment (High environment > 75 B/A – Medium Environment  60 – 75 B/A – low environment < 60 B/A)
+## 3. Which is the best population per RM in different environment (High environment > 75 B/A – Medium Environment  60 – 75 B/A – low environment < 60 B/A)
 For this question, though the approach would be similar as previous, we need to create a new variable to identify
 different environment.
 ```{r}
@@ -368,7 +368,8 @@ ggplot(data = med, aes(x=RM, y=Yield, color=Population))+
   labs(title = 'Yields betwen Population for each RM in Medium environment')
 ```
   
-Again, because the sample size was not sufficient enough to say the yield are different for each population.
+Again, the graph might seems to tell that there's different performance for different Population, but  
+the sample size was not sufficient enough to say the yield are significantly different between each population.
 
 ### Low environment
 ```{r}
@@ -384,6 +385,7 @@ TukeyHSD(aov.low_pop_rm)
 ```
   
 In low environment, when planting Medium 4, Population 45 and 35 is significantly higher than Population 15.
+(See full output in rmd file)
 
 ```{r}
 # Boxplot for Yields betwen Population for each RM
