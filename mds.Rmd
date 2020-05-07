@@ -177,7 +177,9 @@ weeks_prior, 2_week_late, and weeks_late does not have differnece in yield.
 ```{r}
 # boxplot
 ggplot(data = mds_gather, aes(x=day_range, y=yield, color=rm))+
-  geom_boxplot()
+  geom_boxplot()+
+  labs(title = 'Differences in Yield across day_range')+
+  ylab('Yield')
 ```
 
 ## Summary
@@ -185,7 +187,11 @@ According to this dataset, I conclude that Maturity Group does NOT have signific
 matter what Maturity Group the plants were, yields do not have any difference.  
 However, the best planting day would be anytime prior to 15 days after 5/1- it would have sigificantly 
 higher yields overall compared to other planting day.  
-In addtion, planting anytime later than 15 days after 5/1 would have sigificantly higher yield loss.
+In addtion, planting anytime later than 15 days after 5/1 would have sigificantly higher yield loss.  
+A reasonable explaination would be because soybeans are highly-sensitive to the duration of sunlight,
+the longer the time plants were able to recevie light, the better the yield would be. I would assume that
+this dataset contains multuple locations, and thus maturity group's effect was diluted.
+
   
   
   
